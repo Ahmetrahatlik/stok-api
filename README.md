@@ -26,6 +26,7 @@ Bir hırdavat dükkânı için internetsiz çalışan bir masaüstü stok progra
 - **Fiyat geçmişi korunur:** Satış kalemine o anki satış ve alış fiyatı yazılır. Ürün fiyatı sonradan değişse de eski satışların kârı doğru hesaplanır.
 - **Para hesabı:** Tutarlar `Decimal` ve veritabanında `NUMERIC` olarak tutulur; ondalık yuvarlama hatası olmaz.
 - **Veritabanı kuralı:** Stok veritabanı düzeyinde de eksiye düşemez (`CHECK stock >= 0`).
+- **Türkçe arama:** SQL'in `LOWER`/`ILIKE` işlemleri İ, I ve Ç harflerinde güvenilir değil ("çek" araması "Çekiç"i bulmuyordu). Ürün adının Türkçe kurallarla küçültülmüş hâli ayrı bir sütunda tutuluyor ve arama orada yapılıyor.
 
 ## Çalıştırma
 

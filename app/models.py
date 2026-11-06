@@ -16,6 +16,11 @@ def utcnow() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def search_key(text: str) -> str:
+    """Turkish-aware lowercase, since SQL LOWER/ILIKE does not handle İ/I/Ç reliably."""
+    return text.replace("İ", "i").replace("I", "ı").lower()
+
+
 class MovementType(str, Enum):
     PURCHASE = "purchase"
     SALE = "sale"
@@ -33,6 +38,7 @@ class Product(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(120), unique=True)
+    name_key: Mapped[str] = mapped_column(String(120), index=True, default="")
     unit: Mapped[str] = mapped_column(String(20), default="adet")
     purchase_price: Mapped[Decimal] = mapped_column(Money)
     sale_price: Mapped[Decimal] = mapped_column(Money)

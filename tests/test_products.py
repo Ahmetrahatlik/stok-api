@@ -33,6 +33,14 @@ def test_search_and_update(client, hammer):
     assert Decimal(response.json()["sale_price"]) == Decimal("130")
 
 
+def test_search_handles_turkish_case(client, hammer):
+    client.post("/products", json={"name": "İnşaat Çivisi", "purchase_price": "1", "sale_price": "2"})
+    assert [p["name"] for p in client.get("/products", params={"search": "çek"}).json()] == ["Çekiç"]
+    assert [p["name"] for p in client.get("/products", params={"search": "ÇEKİÇ"}).json()] == ["Çekiç"]
+    assert [p["name"] for p in client.get("/products", params={"search": "inşaat"}).json()] == ["İnşaat Çivisi"]
+    assert client.get("/products", params={"search": "%"}).json() == []
+
+
 def test_missing_product_returns_404(client):
     assert client.get("/products/999").status_code == 404
 

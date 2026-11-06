@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.db import get_session
-from app.models import Product
+from app.models import Product, search_key
 from app.schemas import ProductCreate, ProductOut, ProductUpdate
 
 router = APIRouter(prefix="/products", tags=["products"])
@@ -19,7 +19,7 @@ def get_product_or_404(session: Session, product_id: int) -> Product:
 
 @router.post("", response_model=ProductOut, status_code=status.HTTP_201_CREATED)
 def create_product(data: ProductCreate, session: Session = Depends(get_session)):
-    product = Product(**data.model_dump())
+    product = Product(**data.model_dump(), name_key=search_key(data.name))
     session.add(product)
     try:
         session.commit()
@@ -33,7 +33,7 @@ def create_product(data: ProductCreate, session: Session = Depends(get_session))
 def list_products(search: str | None = None, session: Session = Depends(get_session)):
     query = select(Product).order_by(Product.name)
     if search:
-        query = query.where(Product.name.ilike(f"%{search}%"))
+        query = query.where(Product.name_key.contains(search_key(search), autoescape=True))
     return session.scalars(query).all()
 
 
@@ -53,6 +53,7 @@ def update_product(product_id: int, data: ProductUpdate, session: Session = Depe
     product = get_product_or_404(session, product_id)
     for field, value in data.model_dump(exclude_unset=True).items():
         setattr(product, field, value)
+    product.name_key = search_key(product.name)
     try:
         session.commit()
     except IntegrityError:
