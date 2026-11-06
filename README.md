@@ -7,6 +7,9 @@ FastAPI, PostgreSQL ve Docker ile yazıldı; her yüklemede GitHub Actions testl
 
 ![CI](https://github.com/Ahmetrahatlik/stok-api/actions/workflows/ci.yml/badge.svg)
 
+**Canlı demo:** https://stok-api-demo.onrender.com (açılan sayfadan istekleri deneyebilirsiniz; ücretsiz sunucu uykudaysa ilk açılış ~50 sn sürer, veriler yeniden başlatmada sıfırlanır).
+*Live demo with sample data: open the link and use the interactive docs.*
+
 ## Neden?
 
 Bir hırdavat dükkânı için internetsiz çalışan bir masaüstü stok programı geliştirdim. Bu proje aynı iş kurallarını sunucu tarafında, çok kullanıcılı bir API olarak yeniden kuruyor.
