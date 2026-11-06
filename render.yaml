@@ -1,0 +1,13 @@
+# Public demo on Render's free plan. SQLite in /tmp resets on every restart and
+# is refilled with sample data, so visitors can try the API without breaking anything.
+services:
+  - type: web
+    name: stok-api-demo
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        value: sqlite:////tmp/stok.db
+      - key: DEMO_SEED
+        value: "1"
