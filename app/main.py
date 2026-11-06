@@ -1,0 +1,29 @@
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+
+from app.db import Base, engine
+from app.routers import customers, products, sales, stock
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    Base.metadata.create_all(engine)
+    yield
+
+
+app = FastAPI(
+    title="Stok API",
+    description="Stock, sales and customer credit (veresiye) API for a small hardware shop.",
+    version="1.0.0",
+    lifespan=lifespan,
+)
+app.include_router(products.router)
+app.include_router(stock.router)
+app.include_router(customers.router)
+app.include_router(sales.router)
+
+
+@app.get("/health", tags=["health"])
+def health():
+    return {"status": "ok"}
