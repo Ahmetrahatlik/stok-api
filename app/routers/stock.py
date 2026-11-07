@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.auth import current_user
 from app.db import get_session
 from app.models import MovementType, Product, StockMovement
 from app.schemas import AdjustmentIn, MovementOut, PurchaseIn
@@ -17,7 +18,7 @@ def lock_product(session: Session, product_id: int) -> Product:
     return product
 
 
-@router.post("/purchases", response_model=MovementOut, status_code=status.HTTP_201_CREATED)
+@router.post("/purchases", response_model=MovementOut, status_code=status.HTTP_201_CREATED, dependencies=[Depends(current_user)])
 def record_purchase(data: PurchaseIn, session: Session = Depends(get_session)):
     product = lock_product(session, data.product_id)
     product.stock += data.quantity
@@ -35,7 +36,7 @@ def record_purchase(data: PurchaseIn, session: Session = Depends(get_session)):
     return movement
 
 
-@router.post("/adjustments", response_model=MovementOut, status_code=status.HTTP_201_CREATED)
+@router.post("/adjustments", response_model=MovementOut, status_code=status.HTTP_201_CREATED, dependencies=[Depends(current_user)])
 def record_adjustment(data: AdjustmentIn, session: Session = Depends(get_session)):
     """Sets stock to a physically counted value and records the difference."""
     product = lock_product(session, data.product_id)

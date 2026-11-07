@@ -7,7 +7,7 @@ FastAPI, PostgreSQL ve Docker ile yazıldı; her yüklemede GitHub Actions testl
 
 ![CI](https://github.com/Ahmetrahatlik/stok-api/actions/workflows/ci.yml/badge.svg)
 
-**Canlı demo:** https://stok-api-demo.onrender.com (açılan sayfadan istekleri deneyebilirsiniz; ücretsiz sunucu uykudaysa ilk açılış ~50 sn sürer, veriler yeniden başlatmada sıfırlanır).
+**Canlı demo:** https://stok-api-demo.onrender.com (açılan sayfadan istekleri deneyebilirsiniz; ücretsiz sunucu uykudaysa ilk açılış ~50 sn sürer, veriler yeniden başlatmada sıfırlanır). Veri değiştirmek için "Authorize" düğmesinden `demo` / `demo1234` ile giriş yapın.
 *Live demo with sample data: open the link and use the interactive docs.*
 
 ## Neden?
@@ -20,6 +20,8 @@ Bir hırdavat dükkânı için internetsiz çalışan bir masaüstü stok progra
 - **Stok hareketleri:** mal girişi (alış fiyatı güncellenir), sayım düzeltmesi, hareket geçmişi
 - **Satış:** birden çok kalem, nakit veya veresiye; stok yetmezse satışın tamamı iptal olur
 - **Veresiye:** müşteri borcu, tahsilat, borçlu müşteriler listesi
+- **Giriş (JWT):** okumak herkese açık; ürün ekleme, mal girişi, satış ve tahsilat gibi veriyi değiştiren her işlem `/auth/token` ile alınan token ister. Şifreler bcrypt ile saklanır.
+- **Veritabanı göçleri (Alembic):** tablolar `alembic upgrade head` ile kurulur; bir test, göçlerin modellerle birebir aynı olduğunu her seferinde kontrol eder.
 - **Rapor:** tarih aralığına göre ciro, maliyet, brüt kâr ve toplam alacak
 
 ## Önemli kararlar
@@ -47,7 +49,8 @@ Docker olmadan (SQLite ile):
 python -m venv .venv
 .venv/Scripts/activate        # Linux/macOS: source .venv/bin/activate
 pip install -r requirements-dev.txt
-uvicorn app.main:app --reload
+alembic upgrade head
+ADMIN_USERNAME=admin ADMIN_PASSWORD=admin1234 uvicorn app.main:app --reload
 ```
 
 ## Testler
@@ -61,17 +64,21 @@ Yerelde testler bellekte çalışan SQLite kullanır. CI'da `DATABASE_URL` Postg
 ## Örnek istekler
 
 ```bash
+# Giriş yap ve token'ı sakla
+TOKEN=$(curl -s -X POST localhost:8000/auth/token -d "username=admin&password=admin1234" | python -c "import sys,json;print(json.load(sys.stdin)['access_token'])")
+AUTH="Authorization: Bearer $TOKEN"
+
 # Ürün ekle
-curl -X POST localhost:8000/products -H "Content-Type: application/json" \
+curl -X POST localhost:8000/products -H "$AUTH" -H "Content-Type: application/json" \
   -d '{"name": "Çekiç", "purchase_price": "80", "sale_price": "120", "min_stock": "5"}'
 
 # 10 adet mal girişi
-curl -X POST localhost:8000/stock/purchases -H "Content-Type: application/json" \
+curl -X POST localhost:8000/stock/purchases -H "$AUTH" -H "Content-Type: application/json" \
   -d '{"product_id": 1, "quantity": "10"}'
 
 # Müşteri ekle ve veresiye satış yap
-curl -X POST localhost:8000/customers -H "Content-Type: application/json" -d '{"name": "Mehmet Usta"}'
-curl -X POST localhost:8000/sales -H "Content-Type: application/json" \
+curl -X POST localhost:8000/customers -H "$AUTH" -H "Content-Type: application/json" -d '{"name": "Mehmet Usta"}'
+curl -X POST localhost:8000/sales -H "$AUTH" -H "Content-Type: application/json" \
   -d '{"items": [{"product_id": 1, "quantity": "2"}], "payment_type": "credit", "customer_id": 1}'
 
 # Kâr raporu

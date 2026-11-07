@@ -2,20 +2,34 @@ import os
 
 # Tests use an in-memory SQLite database unless CI provides PostgreSQL.
 os.environ.setdefault("DATABASE_URL", "sqlite://")
+# Cheap password hashing keeps the suite fast; production uses the default cost.
+os.environ.setdefault("BCRYPT_ROUNDS", "4")
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
-from app.db import Base, engine  # noqa: E402
+from app.auth import create_user  # noqa: E402
+from app.db import Base, SessionLocal, engine  # noqa: E402
 from app.main import app  # noqa: E402
 
 
 @pytest.fixture()
-def client():
+def anon():
+    """A client with an empty database and no login."""
     Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
     with TestClient(app) as test_client:
         yield test_client
+
+
+@pytest.fixture()
+def client(anon):
+    """A client logged in as a test user."""
+    with SessionLocal() as session:
+        create_user(session, "kasiyer", "gizli-sifre")
+    token = anon.post("/auth/token", data={"username": "kasiyer", "password": "gizli-sifre"}).json()["access_token"]
+    anon.headers["Authorization"] = f"Bearer {token}"
+    return anon
 
 
 @pytest.fixture()

@@ -30,6 +30,8 @@ jobs:
           python-version: "3.11"
           cache: pip
       - run: pip install -r requirements-dev.txt
+      - name: Migrations run up and down on PostgreSQL
+        run: alembic upgrade head && alembic downgrade base
       - run: pytest -q
 
   docker:
@@ -37,3 +39,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - run: docker build -t stok-api .
+      - name: Container starts, migrates and serves the demo
+        run: |
+          docker run -d --name api -p 8000:8000 -e DATABASE_URL=sqlite:////tmp/stok.db -e DEMO_SEED=1 stok-api
+          for i in $(seq 1 30); do curl -sf localhost:8000/health && break; sleep 1; done
+          curl -sf "localhost:8000/products?search=%C3%A7ek" | grep -q "Çekiç"
+          curl -sf -X POST localhost:8000/auth/token -d "username=demo&password=demo1234" | grep -q access_token

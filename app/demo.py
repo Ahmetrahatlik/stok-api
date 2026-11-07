@@ -5,7 +5,7 @@ from decimal import Decimal
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import Customer, MovementType, PaymentType, Product, Sale, SaleItem, StockMovement, search_key
+from app.models import Customer, MovementType, PaymentType, Product, Sale, SaleItem, StockMovement, User, search_key
 
 PRODUCTS = [
     # name, unit, purchase, sale, stock, min_stock
@@ -18,7 +18,15 @@ PRODUCTS = [
 ]
 
 
+DEMO_USERNAME = "demo"
+DEMO_PASSWORD = "demo1234"
+
+
 def seed_demo_data(session: Session) -> None:
+    from app.auth import create_user
+
+    if session.scalar(select(User.id).where(User.username == DEMO_USERNAME)) is None:
+        create_user(session, DEMO_USERNAME, DEMO_PASSWORD)
     if session.scalar(select(Product.id).limit(1)) is not None:
         return
     products = [

@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
+from app.auth import current_user
 from app.db import get_session
 from app.models import Customer, MovementType, PaymentType, Product, Sale, SaleItem, StockMovement
 from app.schemas import ProfitReport, SaleCreate, SaleOut
@@ -13,7 +14,7 @@ from app.schemas import ProfitReport, SaleCreate, SaleOut
 router = APIRouter(tags=["sales"])
 
 
-@router.post("/sales", response_model=SaleOut, status_code=status.HTTP_201_CREATED)
+@router.post("/sales", response_model=SaleOut, status_code=status.HTTP_201_CREATED, dependencies=[Depends(current_user)])
 def create_sale(data: SaleCreate, session: Session = Depends(get_session)):
     customer = None
     if data.customer_id is not None:

@@ -17,6 +17,9 @@ services:
     build: .
     environment:
       DATABASE_URL: postgresql+psycopg://stok:stok@db:5432/stok
+      JWT_SECRET: change-me-in-production
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: admin1234
     ports:
       - "8000:8000"
     depends_on:

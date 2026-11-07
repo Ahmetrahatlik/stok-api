@@ -32,6 +32,15 @@ class PaymentType(str, Enum):
     CREDIT = "credit"
 
 
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    username: Mapped[str] = mapped_column(String(50), unique=True)
+    password_hash: Mapped[str] = mapped_column(String(100))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
 class Product(Base):
     __tablename__ = "products"
     __table_args__ = (CheckConstraint("stock >= 0", name="stock_not_negative"),)
