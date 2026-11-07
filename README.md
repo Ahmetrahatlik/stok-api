@@ -10,6 +10,8 @@ FastAPI, PostgreSQL ve Docker ile yazıldı; her yüklemede GitHub Actions testl
 **Canlı demo:** https://stok-api-demo.onrender.com (açılan sayfadan istekleri deneyebilirsiniz; ücretsiz sunucu uykudaysa ilk açılış ~50 sn sürer, veriler yeniden başlatmada sıfırlanır). Veri değiştirmek için "Authorize" düğmesinden `demo` / `demo1234` ile giriş yapın.
 *Live demo with sample data: open the link and use the interactive docs.*
 
+**Web paneli:** https://stok-panel-7p4r.onrender.com ([kaynak kodu](https://github.com/Ahmetrahatlik/stok-panel)), bu API'yi kullanan React + TypeScript arayüzü.
+
 ## Neden?
 
 Bir hırdavat dükkânı için internetsiz çalışan bir masaüstü stok programı geliştirdim. Bu proje aynı iş kurallarını sunucu tarafında, çok kullanıcılı bir API olarak yeniden kuruyor.
